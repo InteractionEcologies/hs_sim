@@ -1,0 +1,91 @@
+{
+  "study": {
+    "all_conditions" : {
+      "interventions" : [
+        {
+          "name": "pa_jitai",
+          "user_params": [
+            {
+              "name": "message_times",
+              "default_value": {
+                "morning": "08:00",
+                "mid-morning": "10:30",
+                "early-afternoon": "13:00",
+                "late-afternoon": "16:00",
+                "evening": "18:30"
+              },
+              "user_configurable": "true"
+            }
+          ]
+        },
+        {
+          "name": "as_jitai",
+          "user_params": [
+            {
+              "name": "sedentary_duration",
+              "default_value": 60,
+              "user_configurable": "false"
+            },
+            {
+              "name": "decision_interval",
+              "default_value": 180,
+              "user_configurable": "false"
+            }
+          ]
+        }
+      ]
+    },
+    "conditions" : [
+      {
+        "name": "hi_dose",
+        "interventions" : [
+          {
+            "name": "pa_jitai",
+            "user_params": [
+              {
+                "name": "message_probability",
+                "default_value": 0.4,
+                "user_configurable": "false"
+              }
+            ]
+          },
+          {
+            "name": "as_jitai",
+            "user_params": [
+              {
+                "name": "message_probability",
+                "default_value": 0.4,
+                "user_configurable": "false"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "lo_dose",
+        "interventions" : [
+          {
+            "name": "pa_jitai",
+            "user_params": [
+              {
+                "name": "message_probability",
+                "default_value": 0.2,
+                "user_configurable": "false"
+              }
+            ]
+          },
+          {
+            "name": "as_jitai",
+            "user_params": [
+              {
+                "name": "message_probability",
+                "default_value": 0.2,
+                "user_configurable": "false"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

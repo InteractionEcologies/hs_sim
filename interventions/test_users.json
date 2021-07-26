@@ -1,0 +1,67 @@
+{
+  "users": [
+    {
+      "id": "1",
+      "name": "Alice",
+      "conditions": [
+        "hi_dose"
+      ],
+      "message_times": {
+        "morning": "08:00",
+        "mid-morning": "10:30",
+        "early-afternoon": "13:00",
+        "late-afternoon": "16:00",
+        "evening": "18:30"
+      },
+      "decisions": [
+        {
+          "type": "message_sent",
+          "message_id": "AAAA",
+          "decision_time": "2021-08-01T08:00:00.000Z",
+          "timestamp": "2021-08-01T08:05:03.141Z"
+        },
+        {
+          "type": "no_action",
+          "decision_time": "2021-08-01T10:30:00.000Z",
+          "timestamp": "2021-08-01T10:31:33.565Z"
+        }
+      ]
+    },
+    {
+      "id": "2",
+      "name": "Bob",
+      "conditions": [
+        "lo_dose"
+      ],
+      "message_times": {
+        "morning": "08:00",
+        "mid-morning": "10:30",
+        "early-afternoon": "13:00",
+        "late-afternoon": "16:00",
+        "evening": "18:30"
+      }
+    },
+    {
+      "id": "3",
+      "name": "Charlie",
+      "conditions": [
+        "lo_dose"
+      ],
+      "message_times": {
+        "morning": "08:00",
+        "mid-morning": "10:30",
+        "early-afternoon": "13:00",
+        "late-afternoon": "16:00",
+        "evening": "18:30"
+      },
+      "decisions": [
+        {
+          "type": "no_action",
+          "decision_time": "2021-08-01T18:30:00.000Z",
+          "timestamp": "2021-08-01T18:35:03.141Z"
+        }
+      ]
+    }
+  ]
+}
+

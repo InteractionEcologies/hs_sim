@@ -1,0 +1,11 @@
+implementation notes
+
+"real" parts 
+    StudyManager
+    EventManager
+    Interventions
+
+simulated parts
+    SimulatedClock
+    SimContextManager
+    SimUserManager

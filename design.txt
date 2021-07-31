@@ -1,0 +1,199 @@
+'''
+EventManager:
+    responsible for managing triggers and invoking them at the 
+    "right time"
+'''
+class EventManager:
+    register_trigger(self, Trigger: trigger) -> None
+        add trigger to triggers
+    
+    unregister_trigger(self, Trigger: trigger) -> None
+        remove triggers from triggers
+    
+    start(self):
+        schedule first tick
+
+    doTick(self, datetime: current_datetime) -> None
+        for t in triggers:
+            if t.should_fire(current_datetime):
+                dr = t.perform_action(current_datetime)
+                record DecisionRecord: dr
+        schedule next tick
+
+'''
+Intervention:
+    An abstract interface for all Interventions that perform actions based on 
+    user paramaters, user context, and/or the current time.
+
+    Intervention objects are specific to each user, so there will be a lot of them.
+'''
+interface Intervention: # I know you can't really do interfaces in Python
+    __init__(self, EventManager: event_manager, User: user, datetime: current_datetime = datetime.now()):
+        current_datetime param is to support testing, defaults to "now"
+        among other things, registers at least one Trigger with the event_manager
+    
+    do_action(self, datetime: current_datetime, Trigger: trigger) -> DecisionRecord:
+        looks at the User (including params and context) and current time 
+        determines the action to perform, applying probabilities if necessary
+        determines whether to unregister trigger and/or register a new trigger (esp. for time-based triggers) 
+        returns DecisionRecord, which could be "No Action" or contain information about the action that was performed
+    
+    get_user() -> User:
+    
+    get_event_manager() -> EventManager:
+
+'''
+Trigger:
+    An abstract interface for all Triggers that encapsulate the logic for when
+    an Intervention's action should be taken. Triggers are managed by an Intervention
+    and must be registered with the EventManager in order to be active.
+'''
+interface Trigger:
+    __init__(self, Intervention: intervention)
+    
+    should_fire(self, datetime: current_datetime) -> bool
+        looks at the User (including params and context) and current time 
+        uses conditional logic to determine whether this trigger should fire 
+    
+    perform_action(datetime: current_datetime) -> DecisionRecord 
+        calls intervention.do_action(current_datetime, self), returns result
+
+'''
+User:
+    Represents an individual User. One-stop shop to get the user's context, parameters,
+    and active Interventions
+'''
+class User:
+    get_context(self) -> Context # maybe just a dict
+        asks ContextManager for this user's context and returns it
+    
+    getUserParams(self) -> UserParams # maybe just a dict
+        provides user parameters (e.g., study conditions, stable characteristics)
+
+'''
+StudyManager:
+    Runs the show
+'''
+class StudyManager:
+    __init__(self):
+        read studyconfig.json and set everything up accordingly
+        initialize all users 
+        event_manager = EventManager()
+        for u in users:
+            for i in users.getParams()['interventions']
+                i(event_manager, u) # will create an Intervention object for each User<->Intervention pair
+        event_manager.start()
+
+=======
+'''
+PAIntervention:
+    An implementation of the Intervention interface for a physical activity-promoting intervention
+    that sends messages probabilistically at specified times of day (specified in User.getUserParams())
+
+    This intervention ensures that only one of its Triggers is registered at a time--the Trigger 
+    corresponsing to the *next* message decision time
+'''
+class PAIntervention (Intervention):
+    __init__(EventManager: event_manager, User: user, datetime: current_datetime = datetime.now()):
+        self.event_manager = event_manager
+        self.user = user
+        self.message_probability = user.getParams()['conditions']['PAIntervention']['messageProbability']
+        event_manager.register_trigger(initTrigger)
+
+    do_action(datetime: current_datetime, Trigger: trigger) -> DecisionRecord:
+        self.event_manager.unregister_trigger(trigger)
+        self.event_manaager.register_trigger(self.get_next_trigger(current_datetime))
+        roll the dice to determine no action vs action
+            (note that this function does NOT determine whether or not conditions for action are met,
+            the trigger does that)
+        if action: 
+            determine action by looking at user context, etc.
+            perform the action (e.g., send the message)
+        compose and return DecisionRecord
+
+    get_next_trigger(self, datetime: current_datetime):
+        trigger_time = ## determine next trigger by looking at user.getParams()['messageTimes']
+        initTrigger = new PATrigger(self, trigger_time)
+
+'''
+PATrigger:
+    An implementation of the Trigger interface for a triggers managed by PAIntervention
+
+    The trigger looks compares it's "go time" with the current time to decide whether or not to fire
+'''
+class PATrigger (Trigger):
+    __init__(self, Intervention: intervention, datetime: trigger_time)
+        self.intervention = intervention
+        self.trigger_time = trigger_time
+
+    should_fire(self, datetime: current_datetime) -> bool
+        return current_datetime > self.trigger_time
+        
+    perform_action(datetime: current_datetime) -> DecisionRecord 
+        calls intervention.do_action(current_datetime, self), returns result
+    
+=======
+'''
+ASIntervention:
+    An implementation of the Intervention interface for an anti-sedentary messaging intervention
+    that probabilistically sends a message when a user has been sedentary for a specified period of time
+
+    This intervention creates one long-lived Trigger that always checks the user's current sedentary time
+'''
+class ASIntervention (Intervention):
+    __init__(EventManager: event_manager, User: user, datetime: current_datetime = datetime.now()):
+        self.event_manager = event_manager
+        self.user = user
+        self.message_probability = user.getParams()['conditions']['ASIntervention']['messageProbability']
+        event_manager.register_trigger(initTrigger)
+
+    do_action(datetime: current_datetime, Trigger: trigger) -> DecisionRecord:
+        # note, this intervention does NOT unregister its trigger
+        roll the dice to determine no action vs action
+            (note that this function does NOT determine whether or not conditions for action are met,
+            the trigger does that)
+        if action: 
+            determine action by looking at user context, etc.
+
+        compose and return DecisionRecord
+
+    get_next_trigger(self, datetime: current_datetime):
+        trigger_time = ## determine next trigger by looking at user.getParams()['messageTimes']
+        initTrigger = new PATrigger(self, trigger_time)
+
+'''
+ASTrigger:
+    An implementation of the Trigger interface for a trigger managed by ASIntervention
+
+    The trigger is long-lived and compares the user's current sedentary time with a threshhold
+    to determine whether to fire. It also keeps track of the last time it fired and compares with 
+    an "inter-message" threshhold to determine whether to fire, in order to suppress exessive
+    messaging.
+'''
+class ASTrigger (Trigger):
+    __init__(self, Intervention: intervention, datetime: trigger_time)
+        self.intervention = intervention
+        self.trigger_time = trigger_time
+        self.last_decision_time = None
+        self.max_sedentary_minutes = 60
+        self.min_intermessage_time = 300
+
+    should_fire(self, datetime: current_datetime) -> bool
+        user = self.intervention.user
+        sedentary_time = user.get_context()['sedentary_minutes']
+        return ((sedentary_time > self.max_sedentary_minutes) and 
+                (current_datetime - self.last_decision_time > self.min_intermessage_time))
+        
+    perform_action(datetime: current_datetime) -> DecisionRecord 
+        self.last_decision_time = current_datetime ## potentially looking at result to see if a message was sent
+        calls intervention.do_action(current_datetime, self), returns result
+
+
+#### Issues to consider
+* global burden reduction--ways to ensure that interventions don't consume
+  too much of the global burden budget
+    * idea: store something about burden in the user object
+* context manager--how to actually make that work with federating across context services
+* logging and debugging--how to instrument the system to capture information relevant to debugging
+
+
